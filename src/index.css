@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Epilogue", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #fff8ef;
+  --color-surface: #fff8ef;
+  --color-surface-container: #f5edde;
+  --color-surface-container-low: #fbf3e4;
+  --color-surface-container-high: #efe7d9;
+  --color-surface-container-highest: #e9e2d3;
+  --color-surface-bright: #ffffff;
+  
+  --color-primary: #442a22;
+  --color-primary-container: #5d4037;
+  --color-on-primary: #ffffff;
+  
+  --color-secondary: #75584d;
+  --color-secondary-container: #fed7ca;
+  
+  --color-tertiary: #4b2800;
+  --color-tertiary-container: #6b3b00;
+  --color-on-tertiary-container: #faa147;
+  
+  --color-outline: #827470;
+  --color-outline-variant: #d4c3be;
+}
+
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700;800&family=Manrope:wght@400;600;700&display=swap');
+
+  body {
+    @apply bg-background text-primary font-body;
+  }
+}
+
+.glass-effect {
+  backdrop-filter: blur(24px);
+  background-color: rgba(233, 226, 211, 0.4);
+}
+
+.brew-circle-gradient {
+  background: conic-gradient(from 0deg, var(--color-primary) var(--progress), var(--color-surface-container) 0%);
+}
