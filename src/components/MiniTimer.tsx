@@ -1,4 +1,5 @@
 import { Maximize2 } from "lucide-react";
+import { formatTime } from "../lib/formatTime";
 
 interface MiniTimerProps {
   seconds: number;
@@ -7,12 +8,6 @@ interface MiniTimerProps {
 
 export default function MiniTimer({ seconds, totalSeconds }: MiniTimerProps) {
   const progress = (seconds / totalSeconds) * 100;
-  
-  const formatTime = (s: number) => {
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div className="fixed bottom-24 right-6 z-40 glass-effect p-4 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-4 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none">

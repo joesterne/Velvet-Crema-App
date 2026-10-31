@@ -40,6 +40,3 @@
   background-color: rgba(233, 226, 211, 0.4);
 }
 
-.brew-circle-gradient {
-  background: conic-gradient(from 0deg, var(--color-primary) var(--progress), var(--color-surface-container) 0%);
-}

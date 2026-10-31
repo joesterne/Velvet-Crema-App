@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Pause, SkipForward } from "lucide-react";
+import { Pause, Play, SkipForward } from "lucide-react";
 import Header from "./components/Header";
 import BottomNav from "./components/BottomNav";
 import TimerDisplay from "./components/TimerDisplay";
@@ -56,23 +56,34 @@ const RITUAL = {
 
 export default function App() {
   const [currentStepIndex, setCurrentStepIndex] = useState(1); // Starting at Step 2 as per screenshot
-  const [secondsRemaining, setSecondsRemaining] = useState(45);
+  const [secondsRemaining, setSecondsRemaining] = useState(RITUAL.steps[1].duration);
   const [isActive, setIsActive] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
 
   const currentStep = RITUAL.steps[currentStepIndex];
   const totalSeconds = currentStep.duration;
 
+  // One persistent interval for the whole countdown; recreating it on every tick made the timer drift.
   useEffect(() => {
-    let interval: number | undefined;
-    if (isActive && secondsRemaining > 0) {
-      interval = window.setInterval(() => {
-        setSecondsRemaining((prev) => prev - 1);
-      }, 1000);
-    } else if (secondsRemaining === 0) {
-      setIsActive(false);
-    }
+    if (!isActive) return;
+    const interval = window.setInterval(() => {
+      setSecondsRemaining((prev) => Math.max(0, prev - 1));
+    }, 1000);
     return () => clearInterval(interval);
-  }, [isActive, secondsRemaining]);
+  }, [isActive]);
+
+  // Reaching zero ends the step: advance to the next one, or finish the ritual on the last step.
+  useEffect(() => {
+    if (secondsRemaining !== 0 || isComplete) return;
+    setIsActive(false);
+    if (currentStepIndex < RITUAL.steps.length - 1) {
+      const nextIdx = currentStepIndex + 1;
+      setCurrentStepIndex(nextIdx);
+      setSecondsRemaining(RITUAL.steps[nextIdx].duration);
+    } else {
+      setIsComplete(true);
+    }
+  }, [secondsRemaining, currentStepIndex, isComplete]);
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -82,7 +93,18 @@ export default function App() {
       setCurrentStepIndex(nextIdx);
       setSecondsRemaining(RITUAL.steps[nextIdx].duration);
       setIsActive(false);
+    } else {
+      // Skipping on the final step finishes the ritual instead of swallowing the click.
+      setIsActive(false);
+      setIsComplete(true);
     }
+  };
+
+  const restart = () => {
+    setCurrentStepIndex(1);
+    setSecondsRemaining(RITUAL.steps[1].duration);
+    setIsActive(false);
+    setIsComplete(false);
   };
 
   return (
@@ -103,6 +125,21 @@ export default function App() {
           </p>
         </section>
 
+        {isComplete ? (
+          <section className="text-center bg-surface-container-low rounded-xl p-10 mb-12">
+            <h3 className="font-headline text-3xl font-bold text-primary mb-2">Ritual Complete</h3>
+            <p className="text-outline font-medium italic mb-8">
+              Your {RITUAL.name} has finished brewing. Enjoy.
+            </p>
+            <button
+              onClick={restart}
+              className="bg-primary text-on-primary font-headline font-bold py-4 px-8 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+            >
+              Start Again
+            </button>
+          </section>
+        ) : (
+          <>
         {/* Timer Display */}
         <TimerDisplay seconds={secondsRemaining} totalSeconds={totalSeconds} />
 
@@ -146,8 +183,8 @@ export default function App() {
             onClick={toggleTimer}
             className="flex-1 bg-primary text-on-primary font-headline font-bold py-4 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
           >
-            <Pause className="w-5 h-5 fill-current" />
-            {isActive ? "Pause Timer" : "Resume Timer"}
+            {isActive ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+            {isActive ? "Pause Timer" : secondsRemaining < totalSeconds ? "Resume Timer" : "Start Timer"}
           </button>
           <button 
             onClick={nextStep}
@@ -156,9 +193,11 @@ export default function App() {
             <SkipForward className="w-6 h-6 fill-current" />
           </button>
         </div>
+          </>
+        )}
       </main>
 
-      <MiniTimer seconds={secondsRemaining} totalSeconds={totalSeconds} />
+      {!isComplete && <MiniTimer seconds={secondsRemaining} totalSeconds={totalSeconds} />}
       <BottomNav />
     </div>
   );
